@@ -1,25 +1,36 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\ProfileController;
 
-// Redirect Landing Page
+// Redirect Halaman Utama
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Group Route Khusus Admin (Wajib Login & Role Admin)
+// ROUTE JEMBATAN /dashboard (Menangani redirect default dari Laravel Breeze)
+Route::middleware(['auth'])->get('/dashboard', function () {
+    if (auth()->user()->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+    return redirect()->route('customer.dashboard');
+})->name('dashboard');
+
+// ROUTE KHUSUS ADMIN
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 });
 
-// Group Route Khusus Customer (Wajib Login & Role Customer)
+// ROUTE KHUSUS CUSTOMER
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('customer.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    
+    // Route Profile Customer
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
 
-// Auth Routes dari Breeze (Login/Register/Logout)
 require __DIR__.'/auth.php';

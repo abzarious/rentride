@@ -14,27 +14,35 @@ class ProfileController extends Controller
     /**
      * Display the user's profile form.
      */
-    public function edit(Request $request): View
+    public function index()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        $user = Auth::user();
+        return view('profile.index', compact('user'));
     }
 
-    /**
-     * Update the user's profile information.
-     */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function edit()
     {
-        $request->user()->fill($request->validated());
+        $user = Auth::user();
+        return view('profile.edit', compact('user'));
+    }
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+    public function update(Request $request)
+    {
+        $user = Auth::user();
 
-        $request->user()->save();
+        $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+        ]);
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $user->update([
+            'name'  => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+        ]);
+
+        return redirect()->route('customer.profile.index')->with('success', 'Profil berhasil diperbarui!');
     }
 
     /**
