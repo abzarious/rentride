@@ -11,9 +11,9 @@
             <h1 class="text-3xl font-extrabold text-white mt-1">Selamat Datang, {{ auth()->user()->name }}! ✨</h1>
             <p class="text-sm text-gray-400 mt-2">Email: {{ auth()->user()->email }} | No. Telp: {{ auth()->user()->phone ?? 'Belum diisi' }}</p>
         </div>
-        <div class="flex gap-3">
-            <a href="{{ route('customer.profile.index') }}" class="px-5 py-2.5 bg-[#111827] border border-[#D97706] text-[#D97706] font-bold rounded-xl hover:bg-[#D97706] hover:text-slate-950 transition">
-                <i class="fa-solid fa-id-card mr-1"></i> Edit Profil
+        <div class="flex items-center gap-3">
+            <a href="{{ route('customer.profile.index') }}" class="px-5 py-2.5 bg-[#111827] border border-[#D97706] text-[#D97706] font-bold rounded-xl hover:bg-[#D97706] hover:text-slate-950 transition text-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-id-card"></i> Edit Profil
             </a>
         </div>
     </div>
@@ -22,7 +22,7 @@
         <div class="bg-[#111827] p-6 rounded-xl border border-gray-800 flex items-center justify-between">
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase">Rental Aktif</p>
-                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['rental_aktif'] }}</h3>
+                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['rental_aktif'] ?? 1 }}</h3>
                 <p class="text-xs text-[#059669] font-medium mt-1">Toyota Fortuner VRZ</p>
             </div>
             <div class="w-12 h-12 bg-emerald-950 text-[#059669] border border-emerald-600/30 rounded-xl flex items-center justify-center text-xl">
@@ -33,7 +33,7 @@
         <div class="bg-[#111827] p-6 rounded-xl border border-gray-800 flex items-center justify-between">
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase">Riwayat Rental</p>
-                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['riwayat_rental'] }}</h3>
+                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['riwayat_rental'] ?? 8 }}</h3>
                 <p class="text-xs text-gray-400 mt-1">Selesai Berhasil</p>
             </div>
             <div class="w-12 h-12 bg-amber-950 text-[#D97706] border border-amber-600/30 rounded-xl flex items-center justify-center text-xl">
@@ -44,7 +44,7 @@
         <div class="bg-[#111827] p-6 rounded-xl border border-gray-800 flex items-center justify-between">
             <div>
                 <p class="text-xs font-semibold text-gray-400 uppercase">Wishlist</p>
-                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['wishlist'] }}</h3>
+                <h3 class="text-3xl font-bold text-white mt-1">{{ $stats['wishlist'] ?? 3 }}</h3>
                 <p class="text-xs text-gray-400 mt-1">Kendaraan Favorit</p>
             </div>
             <div class="w-12 h-12 bg-red-950 text-red-400 border border-red-600/30 rounded-xl flex items-center justify-center text-xl">
@@ -52,6 +52,10 @@
             </div>
         </div>
     </div>
+
+    <x-alerts.alert type="warning" class="mb-6">
+        Jangan lupa untuk selalu membawa SIM A / SIM C dan KTP asli pada saat pengambilan kendaraan di lokasi rental!
+    </x-alerts.alert>
 
 </div>
 @endsection
