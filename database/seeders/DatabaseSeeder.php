@@ -25,6 +25,11 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminSeeder::class,
             CustomerSeeder::class,
+            BrandSeeder::class,
+            VehicleCategorySeeder::class,
+            VehicleTypeSeeder::class,
+            RentalPackageSeeder::class,
+            SettingSeeder::class,
         ]);
     }
 }
