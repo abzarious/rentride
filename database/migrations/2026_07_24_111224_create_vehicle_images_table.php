@@ -6,23 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('vehicle_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('vehicle_id')->constrained()->cascadeOnDelete();
-            $table->string('image');
+            
+            // Relasi ke tabel vehicles (Cascade Delete)
+            $table->foreignId('vehicle_id')
+                ->constrained('vehicles')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+
+            $table->string('image_path');
             $table->boolean('is_primary')->default(false);
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('vehicle_images');

@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VehicleImage extends Model
 {
-    protected $fillable = ['vehicle_id', 'image', 'is_primary'];
+    use HasFactory;
 
-    public function vehicles() : BelongsTo 
-    {   
-        return $this->belongsTo(Vehicle::class);
-        
+    protected $fillable = [
+        'vehicle_id',
+        'image_path',
+        'is_primary',
+    ];
+
+    /**
+     * Relasi Kebalikan ke Vehicle
+     */
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 }

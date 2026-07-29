@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehicle extends Model
 {
@@ -51,5 +52,10 @@ class Vehicle extends Model
     public function vehicleType(): BelongsTo
     {
         return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(VehicleImage::class, 'vehicle_id');
     }
 }

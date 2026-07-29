@@ -143,6 +143,11 @@
                         </td>
                         <td class="p-4 text-center">
                             <div class="flex items-center justify-center gap-1.5">
+                                <a href="{{ route('admin.vehicles.images.index', $vehicle->id) }}" 
+                                class="px-2.5 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-xs font-semibold hover:bg-blue-600 hover:text-white transition inline-flex items-center gap-1"
+                                title="Kelola Galeri Foto">
+                                    <i class="fa-solid fa-images"></i> Galeri
+                                </a>
                                 <a href="{{ route('admin.vehicles.show', $vehicle->id) }}" class="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition" title="Detail">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
