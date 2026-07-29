@@ -55,7 +55,7 @@
                         <th class="p-4 w-16 text-center">NO</th>
                         <th class="p-4">NAMA BRAND</th>
                         {{-- <th class="p-4">SLUG</th> --}}
-                        <th class="p-4">TANGGAL DIBUAT</th>
+                        {{-- <th class="p-4">TANGGAL DIBUAT</th> --}}
                         <th class="p-4 text-center w-36">AKSI</th>
                     </tr>
                 </thead>
@@ -71,9 +71,9 @@
                             {{-- <td class="p-4 text-xs font-mono text-slate-500">
                                 {{ $brand->slug }}
                             </td> --}}
-                            <td class="p-4 text-xs text-slate-500">
+                            {{-- <td class="p-4 text-xs text-slate-500">
                                 {{ $brand->created_at->format('d M Y, H:i') }}
-                            </td>
+                            </td> --}}
                             <td class="p-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
                                     <a href="{{ route('admin.brands.edit', $brand->id) }}" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-lg text-xs font-bold transition" title="Edit">

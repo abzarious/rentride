@@ -1,7 +1,7 @@
 <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between hidden md:flex shrink-0">
     <div>
         <div class="h-16 flex items-center px-6 bg-slate-950 font-bold text-xl text-white tracking-wider border-b border-slate-800">
-            <i class="fa-solid fa-car-side text-amber-500 mr-3"></i> RENTAL<span class="text-amber-500">HUB</span>
+            <i class="fa-solid fa-car-side text-amber-500 mr-3"></i> RENT<span class="text-amber-500">RIDE</span>
         </div>
 
         <nav class="p-4 space-y-1 text-sm font-medium">
@@ -15,11 +15,12 @@
                 <i class="fa-solid fa-copyright w-6"></i> Brand Kendaraan
             </a>
 
+            <a href="{{ route('admin.vehicle-categories.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.vehicle-categories.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-layer-group w-6"></i> Kategori Kendaraan
+            </a>
+
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
-            </a>
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
-                <i class="fa-solid fa-layer-group w-6"></i> Kategori & Tipe
             </a>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-users w-6"></i> Manajemen User
