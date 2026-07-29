@@ -19,6 +19,10 @@
                 <i class="fa-solid fa-layer-group w-6"></i> Kategori Kendaraan
             </a>
 
+            <a href="{{ route('admin.vehicle-types.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.vehicle-types.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-[#059669] fa-tags w-6"></i> Tipe Kendaraan
+            </a>
+
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
             </a>
