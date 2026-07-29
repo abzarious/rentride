@@ -23,7 +23,7 @@
                 <i class="fa-solid fa-[#059669] fa-tags w-6"></i> Tipe Kendaraan
             </a>
 
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <a href="{{ route('admin.vehicles.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
             </a>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">

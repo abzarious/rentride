@@ -2,17 +2,41 @@
 
 namespace App\Models;
 
+use App\Enums\VehicleStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehicle extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $fillable = [
-        'brand_id', 'vehicle_category_id', 'vehicle_type_id',
-        'name', 'plate_number', 'year', 'color', 'transmission',
-        'fuel', 'price_per_day', 'status', 'description'
+        'brand_id',
+        'category_id',
+        'vehicle_type_id',
+        'name',
+        'plate_number',
+        'year',
+        'color',
+        'price_per_day',
+        'transmission',
+        'fuel_type',
+        'thumbnail',
+        'description',
+        'status',
     ];
+
+    /**
+     * Casting Enum Status
+     */
+    protected $casts = [
+        'status' => VehicleStatus::class,
+        'price_per_day' => 'integer',
+    ];
+
+    // --- RELASI ELOQUENT ---
 
     public function brand(): BelongsTo
     {
@@ -21,21 +45,11 @@ class Vehicle extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(VehicleCategory::class, 'vehicle_category_id');
+        return $this->belongsTo(VehicleCategory::class, 'category_id');
     }
 
-    public function type(): BelongsTo
+    public function vehicleType(): BelongsTo
     {
         return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
-    }
-
-    public function images(): HasMany
-    {
-        return $this->hasMany(VehicleImage::class);
-    }
-
-    public function bookings(): HasMany
-    {
-        return $this->hasMany(Booking::class);
     }
 }

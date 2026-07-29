@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\VehicleCategoryController;
-use App\Http\Controllers\Admin\VehicleTypeController; // <-- Import Controller
+use App\Http\Controllers\Admin\VehicleTypeController;
+use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\ProfileController;
@@ -13,7 +14,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// ROUTE JEMBATAN /dashboard (Menangani redirect default dari Breeze)
+// ROUTE JEMBATAN /dashboard
 Route::middleware(['auth'])->get('/dashboard', function () {
     /** @var \App\Models\User $user */
     $user = auth()->user();
@@ -31,7 +32,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     // Resource Route Master Data
     Route::resource('brands', BrandController::class);
     Route::resource('vehicle-categories', VehicleCategoryController::class);
-    Route::resource('vehicle-types', VehicleTypeController::class); // <-- Tambahkan ini
+    Route::resource('vehicle-types', VehicleTypeController::class); 
+
+    // Route Khusus Soft Delete & Trash Kendaraan (Wajib di atas Route::resource)
+    Route::get('vehicles/trash', [VehicleController::class, 'trash'])->name('vehicles.trash');
+    Route::post('vehicles/{id}/restore', [VehicleController::class, 'restore'])->name('vehicles.restore');
+    Route::delete('vehicles/{id}/force-delete', [VehicleController::class, 'forceDelete'])->name('vehicles.forceDelete');
+    
+    // Resource Route Kendaraan
+    Route::resource('vehicles', VehicleController::class); 
 });
 
 // ROUTE KHUSUS CUSTOMER

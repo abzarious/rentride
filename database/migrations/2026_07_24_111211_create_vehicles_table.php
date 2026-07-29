@@ -6,32 +6,44 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('brand_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vehicle_category_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vehicle_type_id')->constrained()->cascadeOnDelete();
+
+            // Relasi ke Master Data
+            $table->foreignId('brand_id')
+                ->constrained('brands')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            $table->foreignId('category_id')
+                ->constrained('vehicle_categories')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            $table->foreignId('vehicle_type_id')
+                ->constrained('vehicle_types')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            // Detail Kendaraan
             $table->string('name');
             $table->string('plate_number')->unique();
             $table->year('year');
             $table->string('color');
+            $table->unsignedInteger('price_per_day'); // Tipe data integer untuk Rupiah
             $table->string('transmission'); // Automatic / Manual
-            $table->string('fuel'); // Bensin, Diesel, Listrik
-            $table->decimal('price_per_day', 12, 2);
-            $table->enum('status', ['available', 'booked', 'rented', 'maintenance', 'inactive'])->default('available');
+            $table->string('fuel_type');    // Bensin / Diesel / Listrik
+            $table->string('thumbnail')->nullable();
             $table->text('description')->nullable();
+            $table->string('status')->default('available'); // Status dari Enum
+
             $table->timestamps();
+            $table->softDeletes(); // Keamanan soft delete
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('vehicles');
