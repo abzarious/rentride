@@ -4,14 +4,19 @@ namespace Database\Seeders;
 
 use App\Models\Brand;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class BrandSeeder extends Seeder
 {
     public function run(): void
     {
         $brands = ['Honda', 'Toyota', 'Yamaha', 'Suzuki', 'Daihatsu', 'Mitsubishi'];
-        foreach ($brands as $brand) {
-            Brand::create(['name' => $brand]);
+
+        foreach ($brands as $name) {
+            Brand::updateOrCreate(
+                ['name' => $name],
+                ['slug' => Str::slug($name)]
+            );
         }
     }
 }

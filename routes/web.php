@@ -1,9 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\ProfileController;
+
 
 // Redirect Halaman Utama
 Route::get('/', function () {
@@ -21,6 +23,9 @@ Route::middleware(['auth'])->get('/dashboard', function () {
 // ROUTE KHUSUS ADMIN
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Resource Route Master Brand
+    Route::resource('brands', BrandController::class);
 });
 
 // ROUTE KHUSUS CUSTOMER
@@ -32,5 +37,7 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.'
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
+
+
 
 require __DIR__.'/auth.php';

@@ -5,16 +5,21 @@
         </div>
 
         <nav class="p-4 space-y-1 text-sm font-medium">
-            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg text-white bg-amber-600 font-semibold transition">
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 rounded-lg {{ request()->routeIs('admin.dashboard') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-chart-line w-6"></i> Dashboard
             </a>
             
             <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Master Data</div>
+            
+            <a href="{{ route('admin.brands.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.brands.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-copyright w-6"></i> Brand Kendaraan
+            </a>
+
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
             </a>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
-                <i class="fa-solid fa-layer-group w-6"></i> Kategori & Brand
+                <i class="fa-solid fa-layer-group w-6"></i> Kategori & Tipe
             </a>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-users w-6"></i> Manajemen User
