@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'RentRide') }} - Masuk Akun</title>
+    <title>{{ $setting->company_name ?? 'RentRide' }} - Masuk Akun</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -19,10 +19,16 @@
 
     <div class="mb-6 text-center">
         <a href="/" class="inline-flex items-center gap-3 group">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D97706] to-amber-700 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-amber-600/30 group-hover:scale-105 transition duration-200">
-                <i class="fa-solid fa-car"></i>
-            </div>
-            <span class="text-2xl font-black tracking-wider text-white">RENT<span class="text-[#D97706]">RIDE</span></span>
+            @if($setting->logo ?? false)
+                <img src="{{ asset('storage/' . $setting->logo) }}" class="w-12 h-12 object-contain">
+            @else
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D97706] to-amber-700 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-amber-600/30 group-hover:scale-105 transition duration-200">
+                    <i class="fa-solid fa-car"></i>
+                </div>
+            @endif
+            <span class="text-2xl font-black tracking-wider text-white">
+                {{ strtoupper($setting->company_name ?? 'RentRide') }}
+            </span>
         </a>
     </div>
 
@@ -34,7 +40,7 @@
     </div>
 
     <div class="mt-8 text-center text-xs text-gray-500">
-        &copy; {{ date('Y') }} RentRide Premium Rental System. All rights reserved.
+        &copy; {{ date('Y') }} {{ $setting->company_name ?? 'RentRide' }} Premium Rental System. All rights reserved.
     </div>
 
 </body>

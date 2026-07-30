@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\VehicleCategoryController;
 use App\Http\Controllers\Admin\VehicleTypeController;
 use App\Http\Controllers\Admin\VehicleController;
-use App\Http\Controllers\Admin\VehicleImageController;
+use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\ProfileController;
@@ -43,10 +43,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     // Resource Route Kendaraan
     Route::resource('vehicles', VehicleController::class);
 
-    // --- ROUTE MULTIPLE IMAGES KENDARAAN (Sprint 2 Bagian 7) ---
+    // --- ROUTE MULTIPLE IMAGES KENDARAAN  ---
     Route::get('vehicles/{vehicle}/images', [\App\Http\Controllers\Admin\VehicleImageController::class, 'index'])->name('vehicles.images.index');
     Route::post('vehicles/{vehicle}/images', [\App\Http\Controllers\Admin\VehicleImageController::class, 'store'])->name('vehicles.images.store');
     Route::delete('vehicle-images/{image}', [\App\Http\Controllers\Admin\VehicleImageController::class, 'destroy'])->name('vehicle-images.destroy');
+
+    // --- ROUTE PENGATURAN ---
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 });
 
 // ROUTE KHUSUS CUSTOMER

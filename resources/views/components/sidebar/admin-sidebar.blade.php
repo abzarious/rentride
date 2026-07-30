@@ -1,7 +1,12 @@
 <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col justify-between hidden md:flex shrink-0">
     <div>
         <div class="h-16 flex items-center px-6 bg-slate-950 font-bold text-xl text-white tracking-wider border-b border-slate-800">
-            <i class="fa-solid fa-car-side text-amber-500 mr-3"></i> RENT<span class="text-amber-500">RIDE</span>
+            @if($setting->logo ?? false)
+                <img src="{{ asset('storage/' . $setting->logo) }}" alt="Logo" class="h-8 w-auto mr-3 object-contain">
+            @else
+                <i class="fa-solid fa-car-side text-amber-500 mr-3"></i>
+            @endif
+            <span class="truncate">{{ $setting->company_name ?? 'RentRide' }}</span>
         </div>
 
         <nav class="p-4 space-y-1 text-sm font-medium">
@@ -20,10 +25,10 @@
             </a>
 
             <a href="{{ route('admin.vehicle-types.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.vehicle-types.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
-                <i class="fa-solid fa-[#059669] fa-tags w-6"></i> Tipe Kendaraan
+                <i class="fa-solid fa-tags w-6"></i> Tipe Kendaraan
             </a>
 
-            <a href="{{ route('admin.vehicles.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <a href="{{ route('admin.vehicles.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.vehicles.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
             </a>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
@@ -38,11 +43,12 @@
                 <i class="fa-solid fa-file-invoice-dollar w-6"></i> Pembayaran
             </a>
 
-            <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan</div>
+            <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan & Pengaturan</div>
             <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-chart-pie w-6"></i> Laporan Keuangan
             </a>
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            
+            <a href="{{ route('admin.settings.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.settings.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-gear w-6"></i> Pengaturan
             </a>
         </nav>

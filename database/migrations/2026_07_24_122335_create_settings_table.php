@@ -6,27 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('company_name')->default('RentalHub');
+            // General Info
+            $table->string('company_name')->default('RentRide');
             $table->string('logo')->nullable();
+            
+            // Contact Info
+            $table->string('whatsapp')->default('6281234567890');
+            $table->string('phone')->nullable()->default('081234567890');
+            $table->string('email')->nullable()->default('info@rentride.id');
+            $table->text('address')->nullable();
+            
+            // Visual / Theme Colors
             $table->string('primary_color')->default('#111827');
             $table->string('secondary_color')->default('#D97706');
-            $table->string('whatsapp')->default('6281234567890');
-            $table->text('address')->nullable();
-            $table->text('bank_rekening')->nullable();
+            
+            // Bank Info
+            $table->string('bank_name')->nullable()->default('BCA');
+            $table->string('bank_number')->nullable()->default('1234567890');
+            $table->string('bank_holder')->nullable()->default('PT RentRide Indonesia');
+            
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('settings');

@@ -1,17 +1,25 @@
 <header class="bg-[#111827]/90 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-2">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D97706] to-amber-700 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-600/20">
-                <i class="fa-solid fa-car"></i>
-            </div>
-            <span class="text-xl font-extrabold tracking-wider text-white">RENTAL<span class="text-[#D97706]">HUB</span></span>
+        <a href="/" class="flex items-center gap-3">
+            @if($setting->logo ?? false)
+                <img src="{{ asset('storage/' . $setting->logo) }}" class="w-10 h-10 object-contain">
+            @else
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D97706] to-amber-700 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-amber-600/20">
+                    <i class="fa-solid fa-car"></i>
+                </div>
+            @endif
+            <span class="text-xl font-extrabold tracking-wider text-white">
+                {{ strtoupper($setting->company_name ?? 'RentRide') }}
+            </span>
         </a>
 
         <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
             <a href="/" class="hover:text-[#D97706] transition-colors">Beranda</a>
             <a href="#" class="hover:text-[#D97706] transition-colors">Cari Armada</a>
             <a href="#" class="hover:text-[#D97706] transition-colors">Syarat & Ketentuan</a>
-            <a href="#" class="hover:text-[#D97706] transition-colors">Kontak Kami</a>
+            <a href="https://wa.me/{{ $setting->whatsapp ?? '6281234567890' }}" target="_blank" class="hover:text-[#D97706] transition-colors">
+                Kontak WA
+            </a>
         </nav>
 
         <div class="flex items-center gap-3">
