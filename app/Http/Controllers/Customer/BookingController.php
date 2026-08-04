@@ -10,6 +10,7 @@ use App\Services\InvoiceService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
@@ -116,5 +117,19 @@ class BookingController extends Controller
         $setting = Setting::first();
 
         return view('customer.bookings.show', compact('booking', 'setting'));
+    }
+
+    public function downloadPdf($id)
+    {
+        $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $setting = Setting::first();
+
+        // Generate PDF menggunakan view khusus PDF
+        $pdf = Pdf::loadView('customer.bookings.pdf', compact('booking', 'setting'));
+
+        return $pdf->download('Invoice-' . $booking->invoice_number . '.pdf');
     }
 }

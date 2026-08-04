@@ -29,9 +29,6 @@ class Vehicle extends Model
         'status',
     ];
 
-    /**
-     * Casting Enum Status
-     */
     protected $casts = [
         'status' => VehicleStatus::class,
         'price_per_day' => 'integer',
@@ -54,8 +51,19 @@ class Vehicle extends Model
         return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
     }
 
+    // ALIAS METHOD agar 'type' tidak error saat dipanggil oleh Controller / Blade
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(VehicleType::class, 'vehicle_type_id');
+    }
+
     public function images(): HasMany
     {
         return $this->hasMany(VehicleImage::class, 'vehicle_id');
+    }
+
+    public function bookings(): HasMany
+    {
+        return $this->hasMany(Booking::class);
     }
 }

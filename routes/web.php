@@ -11,8 +11,8 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboardContro
 use App\Http\Controllers\Customer\VehicleDetailController;
 use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Api\VehicleAvailabilityController;
 use Illuminate\Support\Facades\Auth;
-
 
 // 1. PUBLIC LANDING PAGE & DETAIL VEHICLE
 Route::get('/', function () {
@@ -23,11 +23,13 @@ Route::get('/', function () {
 
 Route::get('/vehicles/{id}', [VehicleDetailController::class, 'show'])->name('vehicles.show');
 
+// API CEK KETERSEDIAAN
+Route::get('/api/vehicles/{id}/check-availability', [VehicleAvailabilityController::class, 'check']);
+
 // 2. ROUTE JEMBATAN /dashboard
 Route::middleware(['auth'])->get('/dashboard', function () {
     /** @var \App\Models\User $user */
     $user = Auth::user();
-    
     if ($user->isAdmin()) {
         return redirect()->route('admin.dashboard');
     }
@@ -59,17 +61,19 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     
-    // Transaksi Booking Customer
+    // Transaksi & Invoice PDF
     Route::get('/bookings', [CustomerBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/history', [CustomerBookingController::class, 'history'])->name('bookings.history');
     Route::get('/bookings/create/{vehicle_id}', [CustomerBookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [CustomerBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{id}', [CustomerBookingController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/download-pdf', [CustomerBookingController::class, 'downloadPdf'])->name('bookings.download-pdf');
 
-    // Profile Customer
+    // Profil & Change Password
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
 require __DIR__.'/auth.php';
