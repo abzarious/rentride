@@ -8,14 +8,20 @@ use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Customer\VehicleDetailController;
+use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
 use App\Http\Controllers\ProfileController;
 
-// Redirect Halaman Utama
+// 1. PUBLIC / LANDING PAGE & DETAIL VEHICLE
 Route::get('/', function () {
-    return view('welcome');
+    $vehicles = \App\Models\Vehicle::with(['brand', 'category'])->where('status', 'available')->latest()->get();
+    $setting = \App\Models\Setting::first();
+    return view('welcome', compact('vehicles', 'setting'));
 });
 
-// ROUTE JEMBATAN /dashboard
+Route::get('/vehicles/{id}', [VehicleDetailController::class, 'show'])->name('vehicles.show');
+
+// 2. ROUTE JEMBATAN /dashboard
 Route::middleware(['auth'])->get('/dashboard', function () {
     /** @var \App\Models\User $user */
     $user = auth()->user();
@@ -26,37 +32,40 @@ Route::middleware(['auth'])->get('/dashboard', function () {
     return redirect()->route('customer.dashboard');
 })->name('dashboard');
 
-// ROUTE KHUSUS ADMIN
+// 3. ROUTE KHUSUS ADMIN
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
     
-    // Resource Route Master Data
     Route::resource('brands', BrandController::class);
     Route::resource('vehicle-categories', VehicleCategoryController::class);
     Route::resource('vehicle-types', VehicleTypeController::class); 
 
-    // Route Khusus Soft Delete & Trash Kendaraan
     Route::get('vehicles/trash', [VehicleController::class, 'trash'])->name('vehicles.trash');
     Route::post('vehicles/{id}/restore', [VehicleController::class, 'restore'])->name('vehicles.restore');
     Route::delete('vehicles/{id}/force-delete', [VehicleController::class, 'forceDelete'])->name('vehicles.forceDelete');
-    
-    // Resource Route Kendaraan
     Route::resource('vehicles', VehicleController::class);
 
-    // --- ROUTE MULTIPLE IMAGES KENDARAAN  ---
     Route::get('vehicles/{vehicle}/images', [\App\Http\Controllers\Admin\VehicleImageController::class, 'index'])->name('vehicles.images.index');
     Route::post('vehicles/{vehicle}/images', [\App\Http\Controllers\Admin\VehicleImageController::class, 'store'])->name('vehicles.images.store');
     Route::delete('vehicle-images/{image}', [\App\Http\Controllers\Admin\VehicleImageController::class, 'destroy'])->name('vehicle-images.destroy');
 
-    // --- ROUTE PENGATURAN ---
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
 });
 
-// ROUTE KHUSUS CUSTOMER
+// 4. ROUTE KHUSUS CUSTOMER
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     
+    // Booking Saya & Riwayat
+    Route::get('/bookings', [CustomerBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/history', [CustomerBookingController::class, 'history'])->name('bookings.history');
+    
+    // Form Booking (Akan dieksekusi di Sprint 3 Part 2)
+    Route::get('/bookings/create/{vehicle_id}', function($vehicle_id) {
+        return "Halaman Form Booking Kendaraan ID: " . $vehicle_id . " (Siap di Sprint 3 Part 2)";
+    })->name('bookings.create');
+
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');

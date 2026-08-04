@@ -13,21 +13,17 @@
             </span>
         </a>
 
-        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-            <a href="/" class="hover:text-[#D97706] transition-colors">Beranda</a>
-            <a href="#" class="hover:text-[#D97706] transition-colors">Cari Armada</a>
-            <a href="#" class="hover:text-[#D97706] transition-colors">Syarat & Ketentuan</a>
-            <a href="https://wa.me/{{ $setting->whatsapp ?? '6281234567890' }}" target="_blank" class="hover:text-[#D97706] transition-colors">
-                Kontak WA
-            </a>
+        @auth
+        <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
+            <a href="{{ route('customer.dashboard') }}" class="{{ request()->routeIs('customer.dashboard') ? 'text-[#D97706] font-bold' : 'hover:text-[#D97706]' }} transition-colors">Dashboard</a>
+            <a href="{{ route('customer.bookings.index') }}" class="{{ request()->routeIs('customer.bookings.index') ? 'text-[#D97706] font-bold' : 'hover:text-[#D97706]' }} transition-colors">Booking Saya</a>
+            <a href="{{ route('customer.bookings.history') }}" class="{{ request()->routeIs('customer.bookings.history') ? 'text-[#D97706] font-bold' : 'hover:text-[#D97706]' }} transition-colors">Riwayat Rental</a>
+            <a href="{{ route('customer.profile.index') }}" class="{{ request()->routeIs('customer.profile.*') ? 'text-[#D97706] font-bold' : 'hover:text-[#D97706]' }} transition-colors">Profil Saya</a>
         </nav>
+        @endauth
 
         <div class="flex items-center gap-3">
             @auth
-                <a href="{{ route('customer.dashboard') }}" class="px-4 py-2 text-xs font-semibold text-white bg-[#111827] border border-[#D97706] rounded-lg hover:bg-[#D97706] hover:text-slate-950 transition-all">
-                    <i class="fa-solid fa-gauge mr-1.5 text-[#D97706]"></i> Dashboard
-                </a>
-
                 <form method="POST" action="{{ route('logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="px-4 py-2 text-xs font-semibold text-red-400 bg-red-950/40 border border-red-800/60 rounded-lg hover:bg-red-900 hover:text-white transition">

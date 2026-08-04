@@ -6,31 +6,46 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
+            
+            // Format unik: INV202608040001
             $table->string('invoice_number')->unique();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('vehicle_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('rental_package_id')->nullable()->constrained()->nullOnDelete();
+            
+            // Relasi User & Kendaraan
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            $table->foreignId('vehicle_id')
+                ->constrained('vehicles')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+
+            // Tanggal & Waktu Waktu Rental
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->integer('duration_hours');
-            $table->decimal('subtotal', 12, 2);
-            $table->decimal('discount', 12, 2)->default(0);
-            $table->decimal('total', 12, 2);
-            $table->enum('status', ['pending', 'confirmed', 'ongoing', 'completed', 'cancelled'])->default('pending');
+            $table->unsignedInteger('duration_days'); // Total Hari/Durasi
+
+            // Biaya & Rincian
+            $table->unsignedInteger('price_per_day');
+            $table->unsignedInteger('subtotal');
+            $table->unsignedInteger('discount')->default(0);
+            $table->unsignedInteger('total_price');
+
+            // Status Booking: pending, approved, rejected, ongoing, completed, cancelled
+            $table->string('status')->default('pending');
+            
+            $table->text('notes')->nullable();
+            
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('bookings');
