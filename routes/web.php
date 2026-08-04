@@ -11,8 +11,10 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboardContro
 use App\Http\Controllers\Customer\VehicleDetailController;
 use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Auth;
 
-// 1. PUBLIC / LANDING PAGE & DETAIL VEHICLE
+
+// 1. PUBLIC LANDING PAGE & DETAIL VEHICLE
 Route::get('/', function () {
     $vehicles = \App\Models\Vehicle::with(['brand', 'category'])->where('status', 'available')->latest()->get();
     $setting = \App\Models\Setting::first();
@@ -24,7 +26,7 @@ Route::get('/vehicles/{id}', [VehicleDetailController::class, 'show'])->name('ve
 // 2. ROUTE JEMBATAN /dashboard
 Route::middleware(['auth'])->get('/dashboard', function () {
     /** @var \App\Models\User $user */
-    $user = auth()->user();
+    $user = Auth::user();
     
     if ($user->isAdmin()) {
         return redirect()->route('admin.dashboard');
@@ -57,15 +59,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     
-    // Booking Saya & Riwayat
+    // Transaksi Booking Customer
     Route::get('/bookings', [CustomerBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/history', [CustomerBookingController::class, 'history'])->name('bookings.history');
-    
-    // Form Booking (Akan dieksekusi di Sprint 3 Part 2)
-    Route::get('/bookings/create/{vehicle_id}', function($vehicle_id) {
-        return "Halaman Form Booking Kendaraan ID: " . $vehicle_id . " (Siap di Sprint 3 Part 2)";
-    })->name('bookings.create');
+    Route::get('/bookings/create/{vehicle_id}', [CustomerBookingController::class, 'create'])->name('bookings.create');
+    Route::post('/bookings', [CustomerBookingController::class, 'store'])->name('bookings.store');
+    Route::get('/bookings/{id}', [CustomerBookingController::class, 'show'])->name('bookings.show');
 
+    // Profile Customer
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
