@@ -132,4 +132,15 @@ class BookingController extends Controller
 
         return $pdf->download('Invoice-' . $booking->invoice_number . '.pdf');
     }
+
+    public function previewInvoice($id)
+    {
+        $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $setting = Setting::first();
+
+        return view('customer.bookings.preview-invoice', compact('booking', 'setting'));
+    }
 }

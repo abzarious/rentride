@@ -61,15 +61,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
 Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.')->group(function () {
     Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
     
-    // Transaksi & Invoice PDF
+    // Transaksi Booking & Invoice
     Route::get('/bookings', [CustomerBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/history', [CustomerBookingController::class, 'history'])->name('bookings.history');
     Route::get('/bookings/create/{vehicle_id}', [CustomerBookingController::class, 'create'])->name('bookings.create');
     Route::post('/bookings', [CustomerBookingController::class, 'store'])->name('bookings.store');
     Route::get('/bookings/{id}', [CustomerBookingController::class, 'show'])->name('bookings.show');
+    Route::get('/bookings/{id}/preview-invoice', [CustomerBookingController::class, 'previewInvoice'])->name('bookings.preview-invoice');
     Route::get('/bookings/{id}/download-pdf', [CustomerBookingController::class, 'downloadPdf'])->name('bookings.download-pdf');
 
-    // Profil & Change Password
+    // Profil & Password
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
