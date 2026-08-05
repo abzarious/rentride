@@ -7,28 +7,32 @@ use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\Setting;
 use App\Enums\VehicleStatus;
-use App\Services\BookingAvailabilityService;
-use App\Services\InvoiceService;
-use Carbon\Carbon;
+use App\Services\BookingService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingController extends Controller
 {
-    // 1. Menampilkan Daftar Booking Aktif Customer
+    protected BookingService $bookingService;
+
+    public function __construct(BookingService $bookingService)
+    {
+        $this->bookingService = $bookingService;
+    }
+
     public function index()
     {
         $bookings = Booking::with(['vehicle.brand', 'vehicle.category'])
             ->where('user_id', Auth::id())
             ->whereIn('status', ['pending', 'approved', 'ongoing'])
             ->latest()
-            ->paginate(10);
+            ->paginate(9);
 
         return view('customer.bookings.index', compact('bookings'));
     }
 
-    // 2. Menampilkan Riwayat Rental Customer
     public function history()
     {
         $bookings = Booking::with(['vehicle.brand', 'vehicle.category'])
@@ -40,7 +44,6 @@ class BookingController extends Controller
         return view('customer.bookings.history', compact('bookings'));
     }
 
-    // 3. Menampilkan Form Booking
     public function create($vehicle_id)
     {
         $vehicle = Vehicle::with(['brand', 'category', 'vehicleType'])
@@ -52,7 +55,6 @@ class BookingController extends Controller
         return view('customer.bookings.create', compact('vehicle', 'setting'));
     }
 
-    // 4. Menyimpan Booking & Perhitungan Biaya Otomatis (Aman)
     public function store(Request $request)
     {
         $request->validate([
@@ -60,72 +62,30 @@ class BookingController extends Controller
             'start_date' => 'required|date|after_or_equal:today',
             'end_date'   => 'required|date|after:start_date',
             'notes'      => 'nullable|string|max:500',
-        ], [
-            'start_date.after_or_equal' => 'Tanggal mulai rental tidak boleh di masa lalu.',
-            'end_date.after'            => 'Tanggal selesai harus setelah tanggal mulai sewa.',
         ]);
 
-        $vehicle = Vehicle::findOrFail($request->vehicle_id);
+        try {
+            $booking = $this->bookingService->createBooking($request->all(), Auth::id());
 
-        // PERBAIKAN BUG ENUM CHECK:
-        // Cek status enum dengan aman
-        $statusValue = $vehicle->status instanceof VehicleStatus 
-            ? $vehicle->status->value 
-            : $vehicle->status;
-
-        if ($statusValue !== 'available') {
-            return back()->withErrors(['vehicle_id' => 'Maaf, kendaraan ini sedang tidak dalam status tersedia.']);
+            return redirect()->route('customer.bookings.success', $booking->id);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
-
-        // Cek bentrokan tanggal sewa dengan customer lain
-        $isAvailable = BookingAvailabilityService::isAvailable(
-            $vehicle->id,
-            $request->start_date,
-            $request->end_date
-        );
-
-        if (!$isAvailable) {
-            return back()->withErrors(['start_date' => 'Maaf, kendaraan sudah dibooking pada rentang tanggal tersebut. Silakan pilih tanggal lain.']);
-        }
-
-        // LOGIKA PERHITUNGAN BIAYA DI BACKEND
-        $start = Carbon::parse($request->start_date);
-        $end   = Carbon::parse($request->end_date);
-
-        $diffHours = $start->diffInHours($end);
-        $durationDays = (int) ceil($diffHours / 24);
-        if ($durationDays < 1) $durationDays = 1;
-
-        $pricePerDay = $vehicle->price_per_day;
-        $subtotal    = $pricePerDay * $durationDays;
-        $adminFee    = 5000; // Biaya Admin Layanan
-        $discount    = 0;    // Promo / Diskon
-        $totalPrice  = $subtotal + $adminFee - $discount;
-
-        $invoiceNumber = InvoiceService::generate();
-
-        // Simpan Transaksi Booking
-        $booking = Booking::create([
-            'invoice_number' => $invoiceNumber,
-            'user_id'        => Auth::id(),
-            'vehicle_id'     => $vehicle->id,
-            'start_date'     => $start,
-            'end_date'       => $end,
-            'duration_days'  => $durationDays,
-            'price_per_day'  => $pricePerDay,
-            'subtotal'       => $subtotal,
-            'admin_fee'      => $adminFee,
-            'discount'       => $discount,
-            'total_price'    => $totalPrice,
-            'status'         => 'pending',
-            'notes'          => $request->notes,
-        ]);
-
-        return redirect()->route('customer.bookings.show', $booking->id)
-            ->with('success', 'Booking berhasil dibuat! Silakan konfirmasi pembayaran via WhatsApp.');
     }
 
-    // 5. Menampilkan Detail Invoice Booking
+    // Halaman Konfirmasi Booking Berhasil (Jobdesk B)
+    public function success($id)
+    {
+        $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
+            ->where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $setting = Setting::first();
+        $whatsappUrl = WhatsAppService::generateBookingUrl($booking, $setting);
+
+        return view('customer.bookings.success', compact('booking', 'setting', 'whatsappUrl'));
+    }
+
     public function show($id)
     {
         $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
@@ -133,11 +93,11 @@ class BookingController extends Controller
             ->findOrFail($id);
 
         $setting = Setting::first();
+        $whatsappUrl = WhatsAppService::generateBookingUrl($booking, $setting);
 
-        return view('customer.bookings.show', compact('booking', 'setting'));
+        return view('customer.bookings.show', compact('booking', 'setting', 'whatsappUrl'));
     }
 
-    // 6. Preview Invoice
     public function previewInvoice($id)
     {
         $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
@@ -149,7 +109,6 @@ class BookingController extends Controller
         return view('customer.bookings.preview-invoice', compact('booking', 'setting'));
     }
 
-    // 7. Download Invoice PDF
     public function downloadPdf($id)
     {
         $booking = Booking::with(['vehicle.brand', 'vehicle.category', 'user'])
