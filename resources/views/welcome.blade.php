@@ -116,9 +116,16 @@
                                     <span class="text-base font-extrabold text-[#D97706]">Rp {{ number_format($v->price_per_day, 0, ',', '.') }}</span>
                                     <span class="text-[10px] text-gray-500">/hari</span>
                                 </div>
-                                <a href="{{ route('vehicles.show', $v->id) }}" class="px-4 py-2 bg-[#D97706] text-slate-950 font-bold rounded-xl hover:bg-amber-500 text-xs transition shadow-lg shadow-amber-600/20">
-                                    Detail & Sewa
-                                </a>
+                                
+                                @auth
+                                    <a href="{{ route('vehicles.show', $v->id) }}" class="px-4 py-2 bg-[#D97706] text-slate-950 font-bold rounded-xl hover:bg-amber-500 text-xs transition shadow-lg shadow-amber-600/20">
+                                        Detail & Sewa
+                                    </a>
+                                @else
+                                    <a href="{{ route('login') }}" class="px-4 py-2 bg-[#D97706] text-slate-950 font-bold rounded-xl hover:bg-amber-500 text-xs transition shadow-lg shadow-amber-600/20">
+                                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Login untuk Sewa
+                                    </a>
+                                @endauth
                             </div>
                         </div>
                     @endforeach

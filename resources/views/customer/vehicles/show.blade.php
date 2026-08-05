@@ -8,7 +8,7 @@
     <nav class="flex text-xs text-gray-400 mb-6 gap-2">
         <a href="/" class="hover:text-[#D97706]">Beranda</a>
         <span>/</span>
-        <a href="#" class="hover:text-[#D97706]">{{ $vehicle->category->name }}</a>
+        <a href="#" class="hover:text-[#D97706]">{{ $vehicle->category->name ?? 'Kategori' }}</a>
         <span>/</span>
         <span class="text-white font-semibold">{{ $vehicle->name }}</span>
     </nav>
@@ -30,7 +30,7 @@
                 </div>
             </div>
 
-            @if($vehicle->images->count() > 0)
+            @if($vehicle->images && $vehicle->images->count() > 0)
                 <div class="grid grid-cols-4 gap-3 mt-4">
                     <div onclick="changeImage('{{ asset('storage/' . $vehicle->thumbnail) }}')" class="cursor-pointer border-2 border-[#D97706] rounded-xl overflow-hidden h-20 bg-gray-900 hover:opacity-80 transition">
                         <img src="{{ asset('storage/' . $vehicle->thumbnail) }}" class="w-full h-full object-cover">
@@ -48,7 +48,9 @@
             <div class="bg-[#111827] border border-gray-800 rounded-2xl p-6 shadow-xl sticky top-24">
                 
                 <div class="border-b border-gray-800 pb-4 mb-4">
-                    <span class="text-xs font-bold text-[#D97706] uppercase tracking-wider">{{ $vehicle->brand->name }} &bull; {{ $vehicle->type->name }}</span>
+                    <span class="text-xs font-bold text-[#D97706] uppercase tracking-wider">
+                        {{ $vehicle->brand->name ?? 'Brand' }} &bull; {{ $vehicle->vehicleType->name ?? $vehicle->type->name ?? 'Tipe' }}
+                    </span>
                     <h1 class="text-2xl font-extrabold text-white mt-1">{{ $vehicle->name }}</h1>
                     <p class="text-xs text-gray-400 mt-1"><i class="fa-solid fa-barcode mr-1"></i> Plat Nomor: {{ $vehicle->plate_number }}</p>
                 </div>
@@ -74,7 +76,7 @@
                         </div>
                     </div>
                     <div class="bg-[#030712] p-3 rounded-lg border border-gray-800 flex items-center gap-3">
-                        <i class="fa-solid fa-[#D97706] fa-gears text-base"></i>
+                        <i class="fa-solid fa-gears text-[#D97706] text-base"></i>
                         <div>
                             <p class="text-gray-400">Transmisi</p>
                             <p class="font-bold text-white">{{ ucfirst($vehicle->transmission) }}</p>
@@ -101,10 +103,20 @@
                     <p class="text-xs text-gray-400 leading-relaxed">{{ $vehicle->description ?? 'Tidak ada deskripsi khusus untuk armada ini.' }}</p>
                 </div>
 
-                @if($vehicle->status === 'available')
-                    <a href="{{ route('customer.bookings.create', $vehicle->id) }}" class="w-full py-3 bg-[#D97706] text-slate-950 font-extrabold rounded-xl hover:bg-amber-500 transition shadow-lg shadow-amber-600/20 text-center block text-sm">
-                        <i class="fa-solid fa-calendar-plus mr-1.5"></i> Booking Kendaraan Ini
-                    </a>
+                @php
+                    $statusValue = is_object($vehicle->status) ? $vehicle->status->value : $vehicle->status;
+                @endphp
+
+                @if($statusValue === 'available')
+                    @auth
+                        <a href="{{ route('customer.bookings.create', $vehicle->id) }}" class="w-full py-3 bg-[#D97706] text-slate-950 font-extrabold rounded-xl hover:bg-amber-500 transition shadow-lg shadow-amber-600/20 text-center block text-sm">
+                            <i class="fa-solid fa-calendar-plus mr-1.5"></i> Booking Kendaraan Ini
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" class="w-full py-3 bg-[#D97706] text-slate-950 font-extrabold rounded-xl hover:bg-amber-500 transition shadow-lg shadow-amber-600/20 text-center block text-sm">
+                            <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Login Terlebih Dahulu untuk Booking
+                        </a>
+                    @endauth
                 @else
                     <button disabled class="w-full py-3 bg-gray-800 text-gray-500 font-bold rounded-xl text-center text-sm cursor-not-allowed">
                         <i class="fa-solid fa-ban mr-1.5"></i> Armada Sedang Tidak Tersedia

@@ -70,7 +70,7 @@ Route::middleware(['auth', 'role:customer'])->prefix('customer')->as('customer.'
     Route::get('/bookings/{id}/preview-invoice', [CustomerBookingController::class, 'previewInvoice'])->name('bookings.preview-invoice');
     Route::get('/bookings/{id}/download-pdf', [CustomerBookingController::class, 'downloadPdf'])->name('bookings.download-pdf');
 
-    // Profil & Password
+    // Profil & Change Password
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');

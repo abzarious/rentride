@@ -31,9 +31,11 @@ class DashboardController extends Controller
         // 3. Query Statistik Tambahan (Customer & Booking)
         $total_customer   = User::where('role', 'customer')->count();
         $booking_hari_ini = Booking::whereDate('created_at', today())->count();
-        $total_pendapatan = Booking::where('status', 'completed')->sum('total');
+        
+        // REVISI KOLOM DATABASE: sum('total_price')
+        $total_pendapatan = Booking::where('status', 'completed')->sum('total_price');
 
-        // 4. Query Data Terbaru (Widget Programmer D)
+        // 4. Query Data Terbaru
         $latest_vehicles = Vehicle::with(['brand', 'category', 'vehicleType'])
             ->latest()
             ->take(5)

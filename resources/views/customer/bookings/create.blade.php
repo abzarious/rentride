@@ -13,8 +13,8 @@
         <a href="{{ route('vehicles.show', $vehicle->id) }}" class="text-xs text-[#D97706] hover:underline mb-2 inline-block">
             <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Detail Kendaraan
         </a>
-        <h1 class="text-2xl font-extrabold text-white">Formulir & Perhitungan Durasi Sewa</h1>
-        <p class="text-xs text-gray-400">Pilih rentang tanggal sewa. Perhitungan durasi hari dan estimasi total akan diperbarui secara otomatis.</p>
+        <h1 class="text-2xl font-extrabold text-white">Formulir Pemesanan Rental</h1>
+        <p class="text-xs text-gray-400">Pilih tanggal rental. Perhitungan otomatis termasuk biaya admin layanan.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -69,21 +69,29 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-gray-300 uppercase mb-2">Catatan Tambahan (Opsional)</label>
-                        <textarea name="notes" rows="2" placeholder="Contoh: Pengambilan jam 09:00 WIB di stasiun..." class="w-full px-4 py-2.5 bg-[#030712] border border-gray-800 rounded-xl text-white text-sm focus:border-[#D97706] focus:outline-none"></textarea>
+                        <textarea name="notes" rows="2" placeholder="Contoh: Ambil di bandara jam 10:00 WIB..." class="w-full px-4 py-2.5 bg-[#030712] border border-gray-800 rounded-xl text-white text-sm focus:border-[#D97706] focus:outline-none"></textarea>
                     </div>
 
                     <div class="bg-[#030712] border border-gray-800 p-4 rounded-xl space-y-2 text-xs">
                         <div class="flex justify-between text-gray-400">
-                            <span>Tarif / Hari</span>
+                            <span>Tarif Sewa / Hari</span>
                             <span class="font-bold text-white">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between text-gray-400">
                             <span>Lama Sewa</span>
                             <span id="display_duration" class="font-bold text-white">1 Hari</span>
                         </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>Subtotal Sewa</span>
+                            <span id="display_subtotal" class="font-bold text-white">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-400">
+                            <span>Biaya Layanan Admin</span>
+                            <span class="font-bold text-emerald-400">+ Rp 5.000</span>
+                        </div>
                         <div class="flex justify-between text-sm font-extrabold pt-2 border-t border-gray-800 text-white">
-                            <span>Estimasi Total Pembayaran</span>
-                            <span id="display_total" class="text-[#D97706] text-base">Rp {{ number_format($vehicle->price_per_day, 0, ',', '.') }}</span>
+                            <span>Total Pembayaran</span>
+                            <span id="display_total" class="text-[#D97706] text-base">Rp {{ number_format($vehicle->price_per_day + 5000, 0, ',', '.') }}</span>
                         </div>
                     </div>
 
@@ -105,6 +113,7 @@
 <script>
     const disabledRanges = @json($disabledRanges);
     const pricePerDay = {{ $vehicle->price_per_day }};
+    const adminFee = 5000;
 
     const flatpickrConfig = {
         enableTime: true,
@@ -130,9 +139,11 @@
                 let diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays < 1) diffDays = 1;
 
-                const total = diffDays * pricePerDay;
+                const subtotal = diffDays * pricePerDay;
+                const total = subtotal + adminFee;
 
                 document.getElementById('display_duration').innerText = diffDays + " Hari";
+                document.getElementById('display_subtotal').innerText = "Rp " + new Intl.NumberFormat('id-ID').format(subtotal);
                 document.getElementById('display_total').innerText = "Rp " + new Intl.NumberFormat('id-ID').format(total);
             }
         }
