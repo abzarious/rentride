@@ -39,7 +39,7 @@
             <a href="{{ route('admin.bookings.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-calendar-check w-6"></i> Data Booking
             </a>
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <a href="{{ route('admin.payments.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
                 <i class="fa-solid fa-file-invoice-dollar w-6"></i> Pembayaran
             </a>
 

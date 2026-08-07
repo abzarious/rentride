@@ -11,9 +11,9 @@ use Illuminate\Http\Request;
 class BookingController extends Controller
 {
     // 1. Tampilkan Daftar Seluruh Booking dengan Filter Status
-    public function index(Request $request)
+    public function index()
     {
-        $status = $request->get('status');
+        $status = request('status', 'all');
 
         $query = Booking::with(['user', 'vehicle.brand'])->latest();
 

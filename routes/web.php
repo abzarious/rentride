@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\PaymentVerificationController as AdminPaymentVerificationController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Customer\VehicleDetailController;
 use App\Http\Controllers\Customer\BookingController as CustomerBookingController;
@@ -60,6 +61,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{id}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.update-status');
+
+    // Modul Verifikasi Pembayaran Admin (Sprint 4 Hari 1–2)
+    Route::get('/payments', [AdminPaymentVerificationController::class, 'index'])->name('payments.index');
+    Route::get('/payments/{id}', [AdminPaymentVerificationController::class, 'show'])->name('payments.show');
+    Route::put('/payments/{id}/verify', [AdminPaymentVerificationController::class, 'verify'])->name('payments.verify');
 
     // Pengaturan
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
