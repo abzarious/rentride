@@ -67,6 +67,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     Route::get('/payments/{id}', [AdminPaymentVerificationController::class, 'show'])->name('payments.show');
     Route::put('/payments/{id}/verify', [AdminPaymentVerificationController::class, 'verify'])->name('payments.verify');
 
+    // Activity Log 
+    Route::get('/activity-logs', function () {
+        $logs = \App\Models\ActivityLog::with('user')->latest()->paginate(15);
+        return view('admin.activity-logs.index', compact('logs'));
+    })->name('activity-logs.index');
+
     // Pengaturan
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');

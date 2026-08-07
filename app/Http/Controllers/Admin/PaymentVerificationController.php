@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingStatusLog;
+use App\Models\ActivityLog;
 use App\Enums\VehicleStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentVerificationController extends Controller
 {
-    // Tampilkan Daftar Pembayaran yang Perlu Diverifikasi Admin
     public function index()
     {
         $status = request('status', 'all');
@@ -35,16 +35,14 @@ class PaymentVerificationController extends Controller
         return view('admin.payments.index', compact('payments', 'counts', 'status'));
     }
 
-    // Detail Pembayaran & Bukti Transfer
     public function show($id)
     {
-        $booking = Booking::with(['user.profile', 'vehicle.brand', 'vehicle.category', 'statusLogs.user'])
+        $booking = Booking::with(['user', 'vehicle.brand', 'vehicle.category', 'statusLogs.user'])
             ->findOrFail($id);
 
         return view('admin.payments.show', compact('booking'));
     }
 
-    // Eksekusi Verifikasi Pembayaran (Approve, Reject, Pending)
     public function verify(Request $request, $id)
     {
         $request->validate([
@@ -53,6 +51,11 @@ class PaymentVerificationController extends Controller
         ]);
 
         $booking = Booking::with('vehicle')->findOrFail($id);
+
+        // Validasi Mencegah Re-approval
+        if ($booking->status === 'approved' && $request->status === 'approved') {
+            return redirect()->back()->with('error', 'Booking ini sudah disetujui sebelumnya dan tidak bisa di-approve ulang.');
+        }
 
         $oldStatus = $booking->status;
         $newStatus = $request->status;
@@ -63,18 +66,18 @@ class PaymentVerificationController extends Controller
                 'status' => $newStatus,
             ]);
 
-            // 2. Sinkronkan Status Kendaraan
+            // 2. Programmer B: Perubahan Status Kendaraan Otomatis
             if ($booking->vehicle) {
                 if ($newStatus === 'approved') {
+                    // Kendaraan berubah dari Available ke Booked
                     $booking->vehicle->update(['status' => VehicleStatus::BOOKED->value]);
-                } elseif ($newStatus === 'pending') {
-                    $booking->vehicle->update(['status' => VehicleStatus::AVAILABLE->value]);
-                } elseif ($newStatus === 'rejected') {
+                } elseif (in_array($newStatus, ['rejected', 'pending', 'cancelled'])) {
+                    // Kendaraan kembali Available
                     $booking->vehicle->update(['status' => VehicleStatus::AVAILABLE->value]);
                 }
             }
 
-            // 3. Catat ke Tabel booking_status_logs (Persetujuan / Penolakan Admin)
+            // 3. Catat ke Log Status Booking
             BookingStatusLog::create([
                 'booking_id'  => $booking->id,
                 'user_id'     => Auth::id(),
@@ -82,12 +85,19 @@ class PaymentVerificationController extends Controller
                 'to_status'   => $newStatus,
                 'notes'       => $request->notes ?? ('Verifikasi admin: ' . ucfirst($newStatus)),
             ]);
+
+            // 4. Programmer D: Catat Aktivitas ke ActivityLog
+            ActivityLog::log(
+                action: strtoupper($newStatus) . '_BOOKING',
+                description: "Admin " . Auth::user()->name . " mengubah status booking invoice {$booking->invoice_number} dari " . strtoupper($oldStatus) . " menjadi " . strtoupper($newStatus) . ".",
+                subject: $booking
+            );
         });
 
         $message = match ($newStatus) {
-            'approved' => 'Pembayaran berhasil DISETUJUI. Status booking kini Approved.',
-            'rejected' => 'Pembayaran DITOLAK. Kendaraan dikembalikan ke status Tersedia.',
-            'pending'  => 'Status pembayaran dikembalikan ke PENDING.',
+            'approved' => 'Persetujuan (Approval) berhasil. Status booking menjadi Approved dan kendaraan otomatis terisi status BOOKED.',
+            'rejected' => 'Pembayaran/Booking DITOLAK. Kendaraan otomatis dikembalikan ke status Tersedia (Available).',
+            'pending'  => 'Status booking dikembalikan ke PENDING.',
         };
 
         return redirect()->route('admin.payments.show', $booking->id)
