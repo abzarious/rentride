@@ -55,6 +55,10 @@
             </a>
 
             <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan & Pengaturan</div>
+            <a href="{{ route('admin.reports.revenue') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.reports.revenue') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-chart-pie w-6"></i> Laporan Pendapatan
+            </a>
+
             <a href="{{ route('admin.activity-logs.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.activity-logs.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-clock-rotate-left w-6"></i> Activity Log
             </a>
