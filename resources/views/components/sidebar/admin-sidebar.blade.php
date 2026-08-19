@@ -31,21 +31,28 @@
             <a href="{{ route('admin.vehicles.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.vehicles.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-car w-6"></i> Kendaraan
             </a>
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
-                <i class="fa-solid fa-users w-6"></i> Manajemen User
-            </a>
 
-            <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaksi</div>
-            <a href="{{ route('admin.bookings.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+            <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Transaksi & Operasional</div>
+            
+            <a href="{{ route('admin.bookings.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.bookings.index') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-calendar-check w-6"></i> Data Booking
             </a>
-            <a href="{{ route('admin.payments.index') }}" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
+
+            <a href="{{ route('admin.payments.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.payments.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
                 <i class="fa-solid fa-file-invoice-dollar w-6"></i> Pembayaran
             </a>
 
+            <a href="{{ route('admin.bookings.checkout-ready') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.bookings.checkout-ready') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-handshake w-6"></i> Serah Terima (Check-Out)
+            </a>
+
+            <a href="{{ route('admin.bookings.return-ready') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.bookings.return-ready') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-location-dot w-6"></i> Pengembalian (Check-In)
+            </a>
+
             <div class="pt-4 pb-1 px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Laporan & Pengaturan</div>
-            <a href="#" class="flex items-center px-4 py-2.5 rounded-lg hover:bg-slate-800 hover:text-white transition">
-                <i class="fa-solid fa-chart-pie w-6"></i> Laporan Keuangan
+            <a href="{{ route('admin.activity-logs.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.activity-logs.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">
+                <i class="fa-solid fa-clock-rotate-left w-6"></i> Activity Log
             </a>
             
             <a href="{{ route('admin.settings.index') }}" class="flex items-center px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.settings.*') ? 'bg-amber-600 text-white font-semibold' : 'hover:bg-slate-800 hover:text-white' }} transition">

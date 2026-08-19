@@ -91,8 +91,12 @@ class PaymentVerificationController extends Controller
 
         // 5. Catat Activity Log Sistem
         ActivityLog::create([
-            'user_id'  => Auth::id(),
-            'activity' => "Memverifikasi pembayaran invoice {$booking->invoice_number} menjadi {$request->status}.",
+            'user_id'      => Auth::id(),
+            'action'       => 'VERIFY_PAYMENT',
+            'description'  => "Memverifikasi pembayaran invoice {$booking->invoice_number} menjadi {$request->status}.",
+            'subject_type' => Booking::class,
+            'subject_id'   => $booking->id,
+            'ip_address'   => $request->ip(),
         ]);
 
         return redirect()->back()->with('success', 'Verifikasi pembayaran dan bukti transfer berhasil diperbarui!');

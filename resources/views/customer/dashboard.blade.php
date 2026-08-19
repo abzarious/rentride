@@ -23,7 +23,8 @@
 
     @php
         $readyForPickup = $recentBookings->firstWhere('status', 'approved');
-        $activeRental = $recentBookings->firstWhere('status', 'ongoing');
+        $activeRental   = $recentBookings->firstWhere('status', 'ongoing');
+        $justCompleted  = $recentBookings->firstWhere('status', 'completed');
     @endphp
 
     @if($readyForPickup)
@@ -35,12 +36,12 @@
                 <div>
                     <h4 class="text-base font-extrabold text-white">Kendaraan Siap Diambil! 🎉</h4>
                     <p class="text-xs text-amber-200/80 mt-0.5">
-                        Booking Invoice <strong class="text-amber-400">{{ $readyForPickup->invoice_number }}</strong> ({{ $readyForPickup->vehicle->name }}) telah disetujui. Silakan datang ke garasi untuk Check-Out.
+                        Booking Invoice <strong class="text-amber-400">{{ $readyForPickup->invoice_number }}</strong> ({{ $readyForPickup->vehicle->name }}) telah disetujui. Silakan ambil unit di garasi.
                     </p>
                 </div>
             </div>
             <a href="{{ route('customer.bookings.show', $readyForPickup->id) }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shrink-0">
-                Lihat Detail & Lokasi
+                Lihat Detail
             </a>
         </div>
     @elseif($activeRental)
@@ -52,12 +53,29 @@
                 <div>
                     <h4 class="text-base font-extrabold text-white">Kendaraan Sedang Anda Sewa 🚗</h4>
                     <p class="text-xs text-blue-200/80 mt-0.5">
-                        Unit <strong class="text-blue-400">{{ $activeRental->vehicle->name }}</strong> ({{ $activeRental->vehicle->plate_number }}) - Diserahterimakan pada {{ $activeRental->checked_out_at?->format('d/m/Y H:i') ?? '-' }} WIB.
+                        Unit <strong class="text-blue-400">{{ $activeRental->vehicle->name }}</strong> ({{ $activeRental->vehicle->plate_number }}). Batas pengembalian: <strong>{{ $activeRental->end_date->format('d/m/Y H:i') }} WIB</strong>.
                     </p>
                 </div>
             </div>
             <a href="{{ route('customer.bookings.show', $activeRental->id) }}" class="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs rounded-xl transition shrink-0">
                 Lacak Status
+            </a>
+        </div>
+    @elseif($justCompleted)
+        <div class="mb-8 p-6 bg-gradient-to-r from-emerald-950/80 to-slate-900 border border-emerald-500/60 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-extrabold text-white">Pengembalian Berhasil & Rental Selesai! ✅</h4>
+                    <p class="text-xs text-emerald-200/80 mt-0.5">
+                        Unit <strong class="text-emerald-400">{{ $justCompleted->vehicle->name }}</strong> telah dikembalikan pada {{ $justCompleted->checked_in_at?->format('d/m/Y H:i') ?? '-' }} WIB. Terima kasih telah menyewa di RentRide!
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('customer.bookings.show', $justCompleted->id) }}" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl transition shrink-0">
+                Lihat Invoice Selesai
             </a>
         </div>
     @endif

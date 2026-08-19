@@ -29,12 +29,15 @@ class Booking extends Model
         'notes',
         'checked_out_at',
         'checked_out_by',
+        'checked_in_at',
+        'checked_in_by',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
         'checked_out_at' => 'datetime',
+        'checked_in_at' => 'datetime',
         'duration_days' => 'integer',
         'price_per_day' => 'integer',
         'subtotal' => 'integer',
@@ -64,6 +67,11 @@ class Booking extends Model
     public function checkedOutBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'checked_out_by');
+    }
+
+    public function checkedInBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_in_by');
     }
 
     public function payment(): HasOne

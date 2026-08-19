@@ -57,15 +57,16 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     Route::post('vehicles/{vehicle}/images', [\App\Http\Controllers\Admin\VehicleImageController::class, 'store'])->name('vehicles.images.store');
     Route::delete('vehicle-images/{image}', [\App\Http\Controllers\Admin\VehicleImageController::class, 'destroy'])->name('vehicle-images.destroy');
 
-    // Transaksi Booking Admin
-    // Transaksi Booking & Check-Out Admin (Sprint 4)
+    // Transaksi Booking, Check-Out & Check-In Admin 
     Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/checkout-ready', [AdminBookingController::class, 'checkoutReady'])->name('bookings.checkout-ready');
+    Route::get('/bookings/return-ready', [AdminBookingController::class, 'returnReady'])->name('bookings.return-ready');
     Route::get('/bookings/{id}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{id}/checkout', [AdminBookingController::class, 'processCheckout'])->name('bookings.process-checkout');
+    Route::post('/bookings/{id}/return', [AdminBookingController::class, 'processReturn'])->name('bookings.process-return');
     Route::put('/bookings/{id}/status', [AdminBookingController::class, 'updateStatus'])->name('bookings.update-status');
     
-    // Modul Verifikasi Pembayaran Admin (Sprint 4 Hari 1–2)
+    // Modul Verifikasi Pembayaran Admin
     Route::get('/payments', [AdminPaymentVerificationController::class, 'index'])->name('payments.index');
     Route::get('/payments/{id}', [AdminPaymentVerificationController::class, 'show'])->name('payments.show');
     Route::put('/payments/{id}/verify', [AdminPaymentVerificationController::class, 'verify'])->name('payments.verify');
