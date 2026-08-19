@@ -21,6 +21,47 @@
         </div>
     </div>
 
+    @php
+        $readyForPickup = $recentBookings->firstWhere('status', 'approved');
+        $activeRental = $recentBookings->firstWhere('status', 'ongoing');
+    @endphp
+
+    @if($readyForPickup)
+        <div class="mb-8 p-6 bg-gradient-to-r from-amber-950/80 to-slate-900 border border-amber-500/60 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-extrabold text-white">Kendaraan Siap Diambil! 🎉</h4>
+                    <p class="text-xs text-amber-200/80 mt-0.5">
+                        Booking Invoice <strong class="text-amber-400">{{ $readyForPickup->invoice_number }}</strong> ({{ $readyForPickup->vehicle->name }}) telah disetujui. Silakan datang ke garasi untuk Check-Out.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('customer.bookings.show', $readyForPickup->id) }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition shrink-0">
+                Lihat Detail & Lokasi
+            </a>
+        </div>
+    @elseif($activeRental)
+        <div class="mb-8 p-6 bg-gradient-to-r from-blue-950/80 to-slate-900 border border-blue-500/60 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-500/20 text-blue-400 border border-blue-500/40 rounded-xl flex items-center justify-center text-2xl shrink-0">
+                    <i class="fa-solid fa-road"></i>
+                </div>
+                <div>
+                    <h4 class="text-base font-extrabold text-white">Kendaraan Sedang Anda Sewa 🚗</h4>
+                    <p class="text-xs text-blue-200/80 mt-0.5">
+                        Unit <strong class="text-blue-400">{{ $activeRental->vehicle->name }}</strong> ({{ $activeRental->vehicle->plate_number }}) - Diserahterimakan pada {{ $activeRental->checked_out_at?->format('d/m/Y H:i') ?? '-' }} WIB.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('customer.bookings.show', $activeRental->id) }}" class="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs rounded-xl transition shrink-0">
+                Lacak Status
+            </a>
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-[#111827] p-6 rounded-xl border border-gray-800 flex items-center justify-between">
             <div>
@@ -100,7 +141,7 @@
                             <td class="p-3"><x-badges.status-badge :status="$b->status" /></td>
                             <td class="p-3 text-right">
                                 <a href="{{ route('customer.bookings.show', $b->id) }}" class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-[10px] font-bold">
-                                    Detail
+                                    Detail & Tracking
                                 </a>
                             </td>
                         </tr>

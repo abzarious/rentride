@@ -25,12 +25,16 @@ class Booking extends Model
         'discount',
         'total_price',
         'status',
+        'payment_proof',
         'notes',
+        'checked_out_at',
+        'checked_out_by',
     ];
 
     protected $casts = [
         'start_date' => 'datetime',
         'end_date' => 'datetime',
+        'checked_out_at' => 'datetime',
         'duration_days' => 'integer',
         'price_per_day' => 'integer',
         'subtotal' => 'integer',
@@ -55,6 +59,11 @@ class Booking extends Model
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class)->withTrashed();
+    }
+
+    public function checkedOutBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'checked_out_by');
     }
 
     public function payment(): HasOne

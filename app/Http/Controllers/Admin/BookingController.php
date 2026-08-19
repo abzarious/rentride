@@ -4,75 +4,120 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Models\Vehicle;
+use App\Models\BookingStatusLog;
+use App\Models\ActivityLog;
 use App\Enums\VehicleStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
-    // 1. Tampilkan Daftar Seluruh Booking dengan Filter Status
-    public function index()
+    /**
+     * Menampilkan seluruh daftar booking dengan filter status
+     */
+    public function index(Request $request)
     {
-        $status = request('status', 'all');
+        $status = $request->get('status', 'all');
 
-        $query = Booking::with(['user', 'vehicle.brand'])->latest();
+        $query = Booking::with(['user', 'vehicle.brand', 'checkedOutBy'])->latest();
 
-        if ($status && in_array($status, ['pending', 'approved', 'ongoing', 'completed', 'rejected', 'cancelled'])) {
+        if ($status !== 'all') {
             $query->where('status', $status);
         }
 
-        $bookings = $query->paginate(15);
+        $bookings = $query->paginate(10)->withQueryString();
 
-        // Hitung Statistik Per Status
         $counts = [
             'all'       => Booking::count(),
             'pending'   => Booking::where('status', 'pending')->count(),
             'approved'  => Booking::where('status', 'approved')->count(),
             'ongoing'   => Booking::where('status', 'ongoing')->count(),
             'completed' => Booking::where('status', 'completed')->count(),
-            'rejected'  => Booking::where('status', 'rejected')->count(),
+            'cancelled' => Booking::where('status', 'cancelled')->count(),
         ];
 
         return view('admin.bookings.index', compact('bookings', 'counts', 'status'));
     }
 
-    // 2. Detail Booking Sisi Admin
+    /**
+     * Menampilkan detail booking untuk serah terima / Check-Out
+     */
     public function show($id)
     {
-        $booking = Booking::with(['user.profile', 'vehicle.brand', 'vehicle.category'])->findOrFail($id);
+        $booking = Booking::with(['user', 'vehicle.brand', 'vehicle.category', 'statusLogs.user', 'checkedOutBy'])
+            ->findOrFail($id);
+
         return view('admin.bookings.show', compact('booking'));
     }
 
-    // 3. Update Status Booking (Hanya Admin)
-    public function updateStatus(Request $request, $id)
+    /**
+     * Halaman khusus daftar booking yang SIAP DI-CHECK-OUT (Status Approved)
+     */
+    public function checkoutReady()
     {
-        $request->validate([
-            'status' => 'required|in:approved,ongoing,completed,rejected,cancelled',
-        ]);
+        $bookings = Booking::with(['user', 'vehicle.brand'])
+            ->where('status', 'approved')
+            ->latest()
+            ->paginate(10);
 
+        return view('admin.bookings.checkout-ready', compact('bookings'));
+    }
+
+    /**
+     * PROSES CHECK-OUT (Serah Terima Kendaraan)
+     */
+    public function processCheckout(Request $request, $id)
+    {
         $booking = Booking::with('vehicle')->findOrFail($id);
 
-        // Mencegah perubahan jika transaksi sudah selesai/batal
-        if (in_array($booking->status, ['completed', 'rejected', 'cancelled'])) {
-            return back()->with('error', 'Status transaksi ini sudah final dan tidak dapat diubah lagi.');
+        // Protection: Hanya booking status 'approved' yang bisa di Check-Out
+        if ($booking->status !== 'approved') {
+            return redirect()->back()->with('error', 'Proses Check-Out gagal. Kendaraan hanya bisa diserahterimakan jika booking dalam status Approved.');
         }
 
-        $newStatus = $request->status;
-        $booking->status = $newStatus;
-        $booking->save();
+        $request->validate([
+            'notes' => 'nullable|string|max:500',
+        ]);
 
-        // Singkronisasi Status Master Kendaraan Otomatis
-        if ($booking->vehicle) {
-            if ($newStatus === 'approved') {
-                $booking->vehicle->update(['status' => VehicleStatus::BOOKED->value]);
-            } elseif ($newStatus === 'ongoing') {
-                $booking->vehicle->update(['status' => VehicleStatus::RENTED->value]);
-            } elseif (in_array($newStatus, ['completed', 'rejected', 'cancelled'])) {
-                $booking->vehicle->update(['status' => VehicleStatus::AVAILABLE->value]);
+        DB::transaction(function () use ($booking, $request) {
+            $oldStatus = $booking->status;
+
+            // 1. Update Status Booking -> Sedang Disewa (ongoing) & Catat Waktu/Admin
+            $booking->update([
+                'status'         => 'ongoing',
+                'checked_out_at' => now(),
+                'checked_out_by' => Auth::id(),
+            ]);
+
+            // 2. Update Status Kendaraan -> Rented
+            if ($booking->vehicle) {
+                $booking->vehicle->update([
+                    'status' => VehicleStatus::RENTED->value,
+                ]);
             }
-        }
+
+            // 3. Catat Riwayat Log Status Booking
+            BookingStatusLog::create([
+                'booking_id'  => $booking->id,
+                'user_id'     => Auth::id(),
+                'from_status' => $oldStatus,
+                'to_status'   => 'ongoing',
+                'notes'       => $request->notes ?? 'Kendaraan resmi diserahterimakan kepada customer (Check-Out Berhasil).',
+            ]);
+
+            // 4. Catat Activity Log Sistem
+            ActivityLog::create([
+                'user_id'     => Auth::id(),
+                'action'      => 'CHECKOUT_BOOKING',
+                'description' => "Admin " . Auth::user()->name . " melakukan Check-Out unit {$booking->vehicle->name} ({$booking->vehicle->plate_number}) untuk Invoice {$booking->invoice_number}.",
+                'subject_type' => Booking::class,
+                'subject_id'   => $booking->id,
+                'ip_address'   => $request->ip(),
+            ]);
+        });
 
         return redirect()->route('admin.bookings.show', $booking->id)
-            ->with('success', 'Status booking berhasil diperbarui menjadi ' . strtoupper($newStatus));
+            ->with('success', 'Serah terima kendaraan (Check-Out) berhasil! Status booking kini "Sedang Disewa" dan status unit kendaraan "Rented".');
     }
 }

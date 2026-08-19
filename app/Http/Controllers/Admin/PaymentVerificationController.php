@@ -8,8 +8,8 @@ use App\Models\BookingStatusLog;
 use App\Models\ActivityLog;
 use App\Enums\VehicleStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class PaymentVerificationController extends Controller
 {
@@ -46,61 +46,55 @@ class PaymentVerificationController extends Controller
     public function verify(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:approved,rejected,pending',
-            'notes'  => 'nullable|string|max:500',
+            'status'        => 'required|in:approved,rejected,pending',
+            'payment_proof' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096', // Maksimal 4MB
+            'notes'         => 'nullable|string|max:500',
         ]);
 
-        $booking = Booking::with('vehicle')->findOrFail($id);
-
-        // Validasi Mencegah Re-approval
-        if ($booking->status === 'approved' && $request->status === 'approved') {
-            return redirect()->back()->with('error', 'Booking ini sudah disetujui sebelumnya dan tidak bisa di-approve ulang.');
-        }
-
+        $booking = Booking::findOrFail($id);
         $oldStatus = $booking->status;
-        $newStatus = $request->status;
 
-        DB::transaction(function () use ($booking, $oldStatus, $newStatus, $request) {
-            // 1. Update Status Booking
-            $booking->update([
-                'status' => $newStatus,
-            ]);
-
-            // 2. Programmer B: Perubahan Status Kendaraan Otomatis
-            if ($booking->vehicle) {
-                if ($newStatus === 'approved') {
-                    // Kendaraan berubah dari Available ke Booked
-                    $booking->vehicle->update(['status' => VehicleStatus::BOOKED->value]);
-                } elseif (in_array($newStatus, ['rejected', 'pending', 'cancelled'])) {
-                    // Kendaraan kembali Available
-                    $booking->vehicle->update(['status' => VehicleStatus::AVAILABLE->value]);
-                }
+        // 1. Upload / Ganti Gambar Bukti Transfer
+        if ($request->hasFile('payment_proof')) {
+            // Hapus gambar lama di storage jika ada
+            if ($booking->payment_proof && Storage::disk('public')->exists($booking->payment_proof)) {
+                Storage::disk('public')->delete($booking->payment_proof);
             }
 
-            // 3. Catat ke Log Status Booking
-            BookingStatusLog::create([
-                'booking_id'  => $booking->id,
-                'user_id'     => Auth::id(),
-                'from_status' => $oldStatus,
-                'to_status'   => $newStatus,
-                'notes'       => $request->notes ?? ('Verifikasi admin: ' . ucfirst($newStatus)),
-            ]);
+            // Simpan gambar baru ke folder storage/app/public/payments
+            $path = $request->file('payment_proof')->store('payments', 'public');
+            $booking->payment_proof = $path;
+        }
 
-            // 4. Programmer D: Catat Aktivitas ke ActivityLog
-            ActivityLog::log(
-                action: strtoupper($newStatus) . '_BOOKING',
-                description: "Admin " . Auth::user()->name . " mengubah status booking invoice {$booking->invoice_number} dari " . strtoupper($oldStatus) . " menjadi " . strtoupper($newStatus) . ".",
-                subject: $booking
-            );
-        });
+        // 2. Update Status dan Catatan Booking
+        $booking->status = $request->status;
+        if ($request->filled('notes')) {
+            $booking->notes = $request->notes;
+        }
+        $booking->save();
 
-        $message = match ($newStatus) {
-            'approved' => 'Persetujuan (Approval) berhasil. Status booking menjadi Approved dan kendaraan otomatis terisi status BOOKED.',
-            'rejected' => 'Pembayaran/Booking DITOLAK. Kendaraan otomatis dikembalikan ke status Tersedia (Available).',
-            'pending'  => 'Status booking dikembalikan ke PENDING.',
-        };
+        // 3. Update Status Unit Kendaraan jika Approved -> Booked
+        if ($request->status === 'approved') {
+            $booking->vehicle->update(['status' => 'booked']);
+        } elseif (in_array($request->status, ['rejected', 'pending']) && $oldStatus === 'approved') {
+            $booking->vehicle->update(['status' => 'available']);
+        }
 
-        return redirect()->route('admin.payments.show', $booking->id)
-            ->with('success', $message);
+        // 4. Catat Riwayat Log Status Booking
+        BookingStatusLog::create([
+            'booking_id'  => $booking->id,
+            'user_id'     => Auth::id(),
+            'from_status' => $oldStatus,
+            'to_status'   => $request->status,
+            'notes'       => $request->notes ?? ('Verifikasi status diubah menjadi ' . strtoupper($request->status)),
+        ]);
+
+        // 5. Catat Activity Log Sistem
+        ActivityLog::create([
+            'user_id'  => Auth::id(),
+            'activity' => "Memverifikasi pembayaran invoice {$booking->invoice_number} menjadi {$request->status}.",
+        ]);
+
+        return redirect()->back()->with('success', 'Verifikasi pembayaran dan bukti transfer berhasil diperbarui!');
     }
 }

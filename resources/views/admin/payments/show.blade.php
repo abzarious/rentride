@@ -72,7 +72,7 @@
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-shield-halved text-amber-500"></i> Aksi Verifikasi & Approval Admin
+                    <i class="fa-solid fa-shield-halved text-amber-500"></i> Form Upload Bukti Transfer & Approval Admin
                 </h3>
                 
                 @if($booking->status === 'approved')
@@ -81,13 +81,24 @@
                     </div>
                 @endif
 
-                <form action="{{ route('admin.payments.verify', $booking->id) }}" method="POST" class="space-y-4">
+                <form action="{{ route('admin.payments.verify', $booking->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     @method('PUT')
 
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-2">Catatan Verifikasi (Opsional)</label>
-                        <textarea name="notes" rows="2" placeholder="Contoh: Bukti transfer terverifikasi masuk ke rekening BCA..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-amber-500"></textarea>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1.5">
+                            Upload Gambar Bukti Transfer (Dari WA Customer)
+                        </label>
+                        <input type="file" name="payment_proof" accept="image/*" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-amber-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-amber-500 file:text-slate-900 hover:file:bg-amber-600 cursor-pointer">
+                        <p class="text-[10px] text-slate-400 mt-1">Format: JPG, PNG, WEBP (Maksimal 4MB). Gambar akan muncul pada card preview di sebelah kanan.</p>
+                        @error('payment_proof')
+                            <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Catatan Verifikasi (Opsional)</label>
+                        <textarea name="notes" rows="2" placeholder="Contoh: Bukti transfer terverifikasi masuk ke rekening BCA..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-800 focus:outline-none focus:border-amber-500">{{ old('notes', $booking->notes) }}</textarea>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
@@ -111,20 +122,24 @@
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                 <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-file-image text-blue-500"></i> Bukti Transfer Customer
+                    <i class="fa-solid fa-file-image text-blue-500"></i> Bukti Transfer Terupload
                 </h3>
 
                 @if($booking->payment_proof)
                     <div class="group relative rounded-xl border border-slate-200 overflow-hidden bg-slate-100 flex items-center justify-center">
-                        <img src="{{ asset('storage/' . $booking->payment_proof) }}" alt="Bukti Transfer" class="w-full h-56 object-cover group-hover:scale-105 transition duration-300">
+                        <img src="{{ asset('storage/' . $booking->payment_proof) }}" alt="Bukti Transfer {{ $booking->invoice_number }}" class="w-full h-64 object-contain group-hover:scale-105 transition duration-300">
                         <a href="{{ asset('storage/' . $booking->payment_proof) }}" target="_blank" class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-2">
                             <i class="fa-solid fa-magnifying-glass-plus text-base"></i> Lihat Ukuran Penuh
                         </a>
                     </div>
+                    <p class="text-[10px] text-emerald-600 font-semibold text-center flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Foto Bukti Transfer Tersimpan di Server
+                    </p>
                 @else
-                    <div class="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center space-y-2">
-                        <i class="fa-solid fa-receipt text-2xl text-slate-300"></i>
-                        <p class="text-xs text-slate-400">Customer belum mengunggah bukti transfer.</p>
+                    <div class="p-8 border-2 border-dashed border-slate-200 rounded-xl text-center space-y-2">
+                        <i class="fa-solid fa-receipt text-3xl text-slate-300"></i>
+                        <p class="text-xs text-slate-400">Belum ada foto bukti transfer yang diunggah.</p>
+                        <p class="text-[10px] text-slate-400">Pilih gambar resi transfer dari WA customer di form sebelah kiri lalu klik tombol verifikasi.</p>
                     </div>
                 @endif
             </div>
