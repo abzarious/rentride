@@ -79,9 +79,9 @@ class Booking extends Model
         return $this->hasOne(Payment::class);
     }
 
-    public function penalties(): HasMany
+    public function penalty(): HasOne
     {
-        return $this->hasMany(Penalty::class);
+        return $this->hasOne(Penalty::class);
     }
 
     public function statusLogs(): HasMany

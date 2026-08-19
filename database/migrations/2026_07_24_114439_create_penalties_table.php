@@ -6,24 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('penalties', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
-            $table->decimal('amount', 12, 2);
-            $table->string('reason'); // Alasan misal: Telat 2 Jam, Goresan Body
-            $table->enum('status', ['unpaid', 'paid'])->default('unpaid');
+            
+            // Relasi ke tabel bookings
+            $table->foreignId('booking_id')
+                ->constrained('bookings')
+                ->cascadeOnDelete();
+
+            $table->unsignedInteger('late_minutes')->default(0);
+            $table->unsignedInteger('late_hours')->default(0);
+            $table->decimal('amount', 15, 2)->default(0);
+            
+            // Status denda: 'unpaid' (belum dibayar) atau 'paid' (lunas)
+            $table->string('status')->default('unpaid');
+            $table->text('notes')->nullable();
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('penalties');

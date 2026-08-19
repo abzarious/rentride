@@ -71,6 +71,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->as('admin.')->group(
     Route::get('/payments/{id}', [AdminPaymentVerificationController::class, 'show'])->name('payments.show');
     Route::put('/payments/{id}/verify', [AdminPaymentVerificationController::class, 'verify'])->name('payments.verify');
 
+    // Modul Denda Keterlambatan 
+    Route::get('/penalties', [\App\Http\Controllers\Admin\PenaltyController::class, 'index'])->name('penalties.index');
+    Route::get('/penalties/{penalty}', [\App\Http\Controllers\Admin\PenaltyController::class, 'show'])->name('penalties.show');
+    Route::put('/penalties/{penalty}/status', [\App\Http\Controllers\Admin\PenaltyController::class, 'updateStatus'])->name('penalties.update-status');
+
     // Activity Log 
     Route::get('/activity-logs', function () {
         $logs = \App\Models\ActivityLog::with('user')->latest()->paginate(15);

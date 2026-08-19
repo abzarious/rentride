@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingStatusLog;
+use App\Models\Penalty;
 use App\Models\ActivityLog;
+use App\Services\PenaltyService;
 use App\Enums\VehicleStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +15,12 @@ use Illuminate\Support\Facades\Auth;
 
 class BookingController extends Controller
 {
+    protected PenaltyService $penaltyService;
+
+    public function __construct(PenaltyService $penaltyService)
+    {
+        $this->penaltyService = $penaltyService;
+    }
     /**
      * Menampilkan seluruh daftar booking dengan filter status
      */
@@ -136,7 +144,7 @@ class BookingController extends Controller
     {
         $booking = Booking::with('vehicle')->findOrFail($id);
 
-        // Validasi Proteksi: Hanya transaksi 'ongoing' dan belum dikembalikan yang bisa diproses
+        // Proteksi: Hanya booking 'ongoing' yang dapat dikembalikan
         if ($booking->status !== 'ongoing' || $booking->checked_in_at !== null) {
             return redirect()->back()->with('error', 'Proses pengembalian gagal. Transaksi ini tidak dalam status "Sedang Disewa" atau sudah pernah dikembalikan.');
         }
@@ -145,37 +153,59 @@ class BookingController extends Controller
             'notes' => 'nullable|string|max:500',
         ]);
 
-        DB::transaction(function () use ($booking, $request) {
+        $actualReturnTime = now();
+
+        DB::transaction(function () use ($booking, $actualReturnTime, $request) {
             $oldStatus = $booking->status;
 
-            // 1. Catat Waktu Pengembalian Aktual & Admin Penerima
+            // 1. Update Status Booking menjadi 'completed' dan simpan Waktu Pengembalian Aktual
             $booking->update([
                 'status'        => 'completed',
-                'checked_in_at' => now(),
+                'checked_in_at' => $actualReturnTime,
                 'checked_in_by' => Auth::id(),
             ]);
 
-            // 2. Kembalikan Status Kendaraan Menjadi AVAILABLE (Siap Disewa Kembali)
+            // 2. Kembalikan Status Unit Kendaraan menjadi AVAILABLE (Tersedia)
             if ($booking->vehicle) {
                 $booking->vehicle->update([
                     'status' => VehicleStatus::AVAILABLE->value,
                 ]);
             }
 
-            // 3. Mencatat Log Perubahan Status Booking
+            // 3. Kalkulasi Otomatis Denda Keterlambatan
+            $penaltyData = $this->penaltyService->calculate($booking->end_date, $actualReturnTime);
+
+            $penaltyNote = '';
+            if ($penaltyData['is_late']) {
+                // Cegah duplikasi data denda dengan updateOrCreate
+                Penalty::updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    [
+                        'late_minutes' => $penaltyData['late_minutes'],
+                        'late_hours'   => $penaltyData['late_hours'],
+                        'amount'       => $penaltyData['penalty_amount'],
+                        'status'       => 'unpaid',
+                        'notes'        => "Keterlambatan pengembalian unit selama {$penaltyData['late_hours']} jam ({$penaltyData['late_minutes']} menit).",
+                    ]
+                );
+
+                $penaltyNote = " Dikenakan denda keterlambatan sebesar Rp " . number_format($penaltyData['penalty_amount'], 0, ',', '.') . " ({$penaltyData['late_hours']} jam).";
+            }
+
+            // 4. Catat Log Perubahan Status Booking
             BookingStatusLog::create([
                 'booking_id'  => $booking->id,
                 'user_id'     => Auth::id(),
                 'from_status' => $oldStatus,
                 'to_status'   => 'completed',
-                'notes'       => $request->notes ?? 'Kendaraan telah diterima kembali oleh admin di garasi (Check-In Selesai).',
+                'notes'       => ($request->notes ?? 'Kendaraan telah diterima kembali oleh admin di garasi.') . $penaltyNote,
             ]);
 
-            // 4. Catat Activity Log Sistem
+            // 5. Catat Activity Log Sistem
             ActivityLog::create([
-                'user_id'     => Auth::id(),
-                'action'      => 'CHECKIN_BOOKING',
-                'description' => "Admin " . Auth::user()->name . " menerima pengembalian unit {$booking->vehicle->name} ({$booking->vehicle->plate_number}) untuk Invoice {$booking->invoice_number}.",
+                'user_id'      => Auth::id(),
+                'action'       => 'CHECKIN_BOOKING',
+                'description'  => "Admin " . Auth::user()->name . " menerima pengembalian unit {$booking->vehicle->name} ({$booking->vehicle->plate_number}) untuk Invoice {$booking->invoice_number}." . $penaltyNote,
                 'subject_type' => Booking::class,
                 'subject_id'   => $booking->id,
                 'ip_address'   => $request->ip(),
@@ -183,6 +213,6 @@ class BookingController extends Controller
         });
 
         return redirect()->route('admin.bookings.show', $booking->id)
-            ->with('success', 'Pengembalian kendaraan (Check-In) berhasil! Status kendaraan kini kembali "Available" dan siap disewa oleh pelanggan lain.');
+            ->with('success', 'Pengembalian kendaraan (Check-In) berhasil diproses! Status kendaraan kembali "Available".');
     }
 }

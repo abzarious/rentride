@@ -26,44 +26,27 @@
         <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Timeline Status Rental</h3>
         
         <div class="grid grid-cols-4 gap-2 text-center text-xs relative before:absolute before:top-4 before:left-0 before:w-full before:h-1 before:bg-gray-800 z-0">
-            
             <div class="relative z-10 flex flex-col items-center">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 1 ? 'bg-[#D97706] text-slate-950 shadow-lg shadow-amber-600/30' : 'bg-gray-800 text-gray-500' }}">
-                    1
-                </div>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 1 ? 'bg-[#D97706] text-slate-950 shadow-lg shadow-amber-600/30' : 'bg-gray-800 text-gray-500' }}">1</div>
                 <span class="mt-2 font-semibold {{ $step >= 1 ? 'text-white' : 'text-gray-500' }}">Booking Dibuat</span>
-                <span class="text-[10px] text-gray-500 mt-0.5">Pending Verifikasi</span>
             </div>
-
             <div class="relative z-10 flex flex-col items-center">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 2 ? 'bg-[#D97706] text-slate-950 shadow-lg shadow-amber-600/30' : 'bg-gray-800 text-gray-500' }}">
-                    2
-                </div>
-                <span class="mt-2 font-semibold {{ $step >= 2 ? 'text-white' : 'text-gray-500' }}">Pembayaran Valid</span>
-                <span class="text-[10px] text-gray-500 mt-0.5">Siap Diambil</span>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 2 ? 'bg-[#D97706] text-slate-950 shadow-lg shadow-amber-600/30' : 'bg-gray-800 text-gray-500' }}">2</div>
+                <span class="mt-2 font-semibold {{ $step >= 2 ? 'text-white' : 'text-gray-500' }}">Disetujui</span>
             </div>
-
             <div class="relative z-10 flex flex-col items-center">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 3 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-gray-800 text-gray-500' }}">
-                    3
-                </div>
-                <span class="mt-2 font-semibold {{ $step >= 3 ? 'text-white' : 'text-gray-500' }}">Serah Terima Unit</span>
-                <span class="text-[10px] text-gray-500 mt-0.5">Sedang Disewa</span>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 3 ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30' : 'bg-gray-800 text-gray-500' }}">3</div>
+                <span class="mt-2 font-semibold {{ $step >= 3 ? 'text-white' : 'text-gray-500' }}">Sedang Disewa</span>
             </div>
-
             <div class="relative z-10 flex flex-col items-center">
-                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 4 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-gray-800 text-gray-500' }}">
-                    4
-                </div>
-                <span class="mt-2 font-semibold {{ $step >= 4 ? 'text-white' : 'text-gray-500' }}">Pengembalian Unit</span>
-                <span class="text-[10px] text-gray-500 mt-0.5">Selesai (Returned)</span>
+                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs {{ $step >= 4 ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'bg-gray-800 text-gray-500' }}">4</div>
+                <span class="mt-2 font-semibold {{ $step >= 4 ? 'text-white' : 'text-gray-500' }}">Selesai</span>
             </div>
-
         </div>
     </div>
 
-    <div class="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl space-y-4">
-        <div class="border-b border-gray-800 pb-3 flex justify-between items-center">
+    <div class="bg-[#111827] border border-gray-800 p-6 rounded-2xl shadow-xl space-y-6">
+        <div class="border-b border-gray-800 pb-4 flex justify-between items-center">
             <div>
                 <span class="text-[10px] text-gray-400 font-bold uppercase">Invoice</span>
                 <h2 class="text-2xl font-black text-[#D97706]">{{ $booking->invoice_number }}</h2>
@@ -80,8 +63,8 @@
                 <p class="text-gray-400 text-[10px]">{{ $booking->vehicle->plate_number }}</p>
             </div>
             <div>
-                <p class="text-gray-500">Total Biaya Tagihan</p>
-                <p class="font-extrabold text-[#D97706] text-sm mt-0.5">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</p>
+                <p class="text-gray-500">Durasi Sewa</p>
+                <p class="font-bold text-white text-sm mt-0.5">{{ $booking->duration_days }} Hari</p>
             </div>
             <div>
                 <p class="text-gray-500">Waktu Mulai Sewa</p>
@@ -91,19 +74,43 @@
                 <p class="text-gray-500">Batas Waktu Pengembalian</p>
                 <p class="font-bold text-white mt-0.5">{{ $booking->end_date->format('d/m/Y H:i') }} WIB</p>
             </div>
-            <div>
-                <p class="text-gray-500">Waktu Serah Terima (Check-Out)</p>
-                <p class="font-bold text-blue-400 mt-0.5">
-                    {{ $booking->checked_out_at ? $booking->checked_out_at->format('d M Y H:i') . ' WIB' : 'Belum diserahterimakan' }}
-                </p>
+            @if($booking->checked_in_at)
+                <div>
+                    <p class="text-gray-500">Waktu Pengembalian Aktual (Check-In)</p>
+                    <p class="font-bold text-emerald-400 mt-0.5">{{ $booking->checked_in_at->format('d/m/Y H:i') }} WIB</p>
+                </div>
+            @endif
+        </div>
+
+        <div class="border-t border-gray-800 pt-4 space-y-2 text-xs">
+            <div class="flex justify-between text-gray-300">
+                <span>Biaya Utama Rental ({{ $booking->duration_days }} Hari)</span>
+                <span class="font-bold text-white">Rp {{ number_format($booking->total_price, 0, ',', '.') }}</span>
             </div>
-            <div>
-                <p class="text-gray-500">Waktu Pengembalian Aktual (Check-In)</p>
-                <p class="font-bold text-emerald-400 mt-0.5">
-                    {{ $booking->checked_in_at ? $booking->checked_in_at->format('d M Y H:i') . ' WIB' : 'Belum dikembalikan' }}
-                </p>
+
+            @if($booking->penalty && $booking->penalty->amount > 0)
+                <div class="p-3 bg-red-950/40 border border-red-800/60 rounded-xl space-y-1 my-2">
+                    <div class="flex justify-between items-center text-red-400 font-bold">
+                        <span>
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Denda Keterlambatan ({{ $booking->penalty->late_hours }} Jam)
+                        </span>
+                        <span class="text-sm">Rp {{ number_format($booking->penalty->amount, 0, ',', '.') }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-[10px] text-red-300/80">
+                        <span>Status Pelunasan Denda:</span>
+                        <span class="uppercase font-extrabold">{{ $booking->penalty->status === 'paid' ? 'LUNAS' : 'BELUM DIBAYAR' }}</span>
+                    </div>
+                </div>
+            @endif
+
+            <div class="flex justify-between items-center pt-3 border-t border-gray-800 text-sm font-extrabold">
+                <span class="text-white">Total Akhir Tagihan</span>
+                <span class="text-[#D97706] text-lg">
+                    Rp {{ number_format($booking->total_price + ($booking->penalty->amount ?? 0), 0, ',', '.') }}
+                </span>
             </div>
         </div>
+
     </div>
 
 </div>
